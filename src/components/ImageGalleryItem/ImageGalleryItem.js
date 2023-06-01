@@ -5,16 +5,16 @@ import {
 } from './ImageGalleryItem.styled';
 
 const ImageGalleryItem = ({ onToggle, onGetId, hits }) => {
-  return hits.map(({ id, webformatURL, tags }) => {
+  return hits.map((hit) => {
     return ( <a href='##'
-        key={id}
+        key={hit.id}
         onClick={() => {
           onToggle();
-          onGetId(id);
+          onGetId(hit);
         }}
       >
         <ImageGalleryItemLi>
-          <ImageGalleryItemImage src={webformatURL} alt={tags} />
+          <ImageGalleryItemImage src={hit.webformatURL} alt={hit.tags} />
         </ImageGalleryItemLi>
       </a>
     );

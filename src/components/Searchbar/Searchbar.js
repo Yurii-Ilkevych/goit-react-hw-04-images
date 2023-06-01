@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Head,
@@ -10,51 +10,41 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { IconContext } from 'react-icons';
-class Searchbar extends Component {
-  state = {
-    name: '',
-  };
+function Searchbar({ onForm }) {
+  const [name, setName] = useState('');
 
-  handleText = event => {
+  const handleText = event => {
     const { value } = event.currentTarget;
-    this.setState({
-      name: value,
-    });
+    setName(value);
   };
 
-  hundleSubmit = event => {
+  const hundleSubmit = event => {
     event.preventDefault();
-    if (this.state.name.trim() === '') {
+    if (name.trim() === '') {
       toast.error('invalid name Search !');
       return;
     }
-    this.props.onForm(this.state.name);
-    this.setState({
-      name: '',
-    });
+    onForm(name);
+    setName('');
   };
-
-  render() {
-    const { name } = this.state;
-    return (
-      <Head>
-        <SearchForm onSubmit={this.hundleSubmit}>
-          <SearchFormButton type="submit">
-            <IconContext.Provider value={{ color: 'blue', size: '3em' }}>
-              <AiOutlineSearch />
-            </IconContext.Provider>
-          </SearchFormButton>
-          <SearchFormInput
-            onChange={this.handleText}
-            type="text"
-            autocomplete="off"
-            value={name}
-            placeholder="Search images and photos"
-          />
-        </SearchForm>
-      </Head>
-    );
-  }
+  return (
+    <Head>
+      <SearchForm onSubmit={hundleSubmit}>
+        <SearchFormButton type="submit">
+          <IconContext.Provider value={{ color: 'blue', size: '3em' }}>
+            <AiOutlineSearch />
+          </IconContext.Provider>
+        </SearchFormButton>
+        <SearchFormInput
+          onChange={handleText}
+          type="text"
+          autocomplete="off"
+          value={name}
+          placeholder="Search images and photos"
+        />
+      </SearchForm>
+    </Head>
+  );
 }
 
 export default Searchbar;

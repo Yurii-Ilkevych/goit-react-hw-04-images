@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import ImageGalleryItem from 'components/ImageGalleryItem';
@@ -8,140 +8,146 @@ import Button from 'components/Button';
 import fetchSearch from 'components/Api/FetchSearch';
 import Modal from 'components/Modal';
 
-let btnToggle = false;
-let totalHits = 0;
-class ImageGallery extends Component {
-  state = {
-    searchArrayPhoto: null,
-    status: 'idle',
-    page: 1,
-    show: false,
-    photoForModal: null,
-  };
+function ImageGallery({ searchName }) {
+  const [arrayPhoto, setArrayPhoto] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [page, setPage] = useState(1);
+  const [show, setShow] = useState(false);
+  const [photoForModal, setPhotoForModal] = useState(null);
+  const [btnToggle, setBtnToggle] = useState(false);
+  const [totalHits, setTotalHits] = useState(0);
 
- async componentDidUpdate(prevProps ) {
-    const { toggleButton, reset, hundleFetch } = this;
 
-    if (prevProps.searchName !== this.props.searchName) {
-     toggleButton(false);
-     await reset();
-     this.setState({ status: 'pending' });
-      hundleFetch();
-     }
-  }
+  useEffect(() => {
+    if (searchName === '') {
+      return;
+    }
+setStatus("pending")
 
-  hundleFetch = () => {
-    const { searchName } = this.props;
-    const { page } = this.state;
-    const { toDoThen, reset } = this;
     fetchSearch(searchName, page)
       .then(searchArrayPhoto => {
+        
+        if (searchArrayPhoto.hits.length === 0) {
+          setStatus('rejected');
+          toast.error(`Not found ${searchName}`);
+          reset();
+          return;
+        }
+
         toDoThen(searchArrayPhoto);
       })
       .catch(() => {
-        this.setState({ status: 'rejected' });
+        setStatus('rejected');
         toast.error(`Not found ${searchName}`);
         reset();
         return;
       });
+
+
+    const toDoThen = searchArrayPhoto => {
+
+      if (arrayPhoto === null) {
+        setStatus('resolved');
+        setArrayPhoto(searchArrayPhoto.hits);
+        setTotalHits(searchArrayPhoto.totalHits);
+      } else if (arrayPhoto !== null) {
+        setArrayPhoto(prev => [...prev, ...searchArrayPhoto.hits]);
+        setStatus('resolved');
+      }
+
+      if (searchArrayPhoto.totalHits <= 12) {
+        setBtnToggle(false);
+      } else if (searchArrayPhoto.totalHits > 12) {
+        setBtnToggle(true);
+      }
+
+      if (arrayPhoto !== null && arrayPhoto.length + 12 === totalHits) {
+        setBtnToggle(false);
+      }
+    };
+  }, [searchName, page, arrayPhoto, totalHits]);
+
+  // const hundleFetch = () => {
+  //   fetchSearch(searchName, page)
+  //     .then(searchArrayPhoto => {
+  //       toDoThen(searchArrayPhoto);
+  //     })
+  //     .catch(() => {
+  //       setStatus('rejected');
+  //       toast.error(`Not found ${searchName}`);
+  //       reset();
+  //       return;
+  //     });
+  // };
+
+  // const toDoThen = searchArrayPhoto => {
+  //   if (searchArrayPhoto.hits.length === 0) {
+  //     setStatus('rejected');
+  //     toast.error(`Not found ${searchName}`);
+  //     reset();
+  //     return;
+  //   }
+  //   if (arrayPhoto === null) {
+  //     setStatus('resolved');
+  //     setArrayPhoto(searchArrayPhoto.hits);
+  //     setTotalHits(searchArrayPhoto.totalHits);
+  //   } else if (arrayPhoto !== null) {
+  //     setArrayPhoto(prev => [...prev, ...searchArrayPhoto.hits]);
+  //     setStatus('resolved');
+  //   }
+
+  //   if (searchArrayPhoto.totalHits <= 12) {
+  //     setBtnToggle(false);
+  //   } else if (searchArrayPhoto.totalHits > 12) {
+  //     setBtnToggle(true);
+  //   }
+
+  //   if (arrayPhoto !== null && arrayPhoto.length + 12 === totalHits) {
+  //     setBtnToggle(false);
+  //   }
+  // };
+
+  const reset = () => {
+    setArrayPhoto(null);
+    setStatus('idle');
+    setPage(1);
+    setBtnToggle();
+    setTotalHits(0);
   };
 
-  toDoThen = searchArrayPhoto => {
-    if (searchArrayPhoto.hits.length === 0) {
-      this.setState({ status: 'rejected' });
-      toast.error(`Not found ${this.props.searchName}`);
-      this.reset();
-      return;
-    }
-    if (this.state.searchArrayPhoto === null) {
-      this.setState({
-        status: 'resolved',
-        searchArrayPhoto: searchArrayPhoto.hits,
-      });
-      totalHits = searchArrayPhoto.totalHits;
-    } else if (this.state.searchArrayPhoto !== null) {
-      this.setState(prevState => ({
-        searchArrayPhoto: [
-          ...prevState.searchArrayPhoto,
-          ...searchArrayPhoto.hits,
-        ],
-        status: 'resolved',
-      }));
-    }
-
-    if (searchArrayPhoto.totalHits <= 12) {
-      this.toggleButton(false);
-    } else if (searchArrayPhoto.totalHits > 12) {
-      this.toggleButton(true);
-    }
-
-    if (
-      this.state.searchArrayPhoto !== null &&
-      this.state.searchArrayPhoto.length + 12 === totalHits
-    ) {
-      this.toggleButton(false);
-    }
+  const hundleLoadMore = () => {
+    setPage(prev => (prev += 1));
   };
 
-  toggleButton = bool => {
-    return (btnToggle = bool);
+  const getPhoto = hit => {
+    setPhotoForModal(hit);
   };
 
-  reset = () => {
-    this.setState({ searchArrayPhoto: null, status: 'idle', page: 1 });
-    this.toggleButton(false);
-    btnToggle = false;
-    totalHits = 0;
+  const toggle = () => {
+    setShow(!show);
   };
-
-  hundleLoadMore = async () => {
-    await this.setState(({ page }) => ({
-      page: (page += 1),
-    }));
-
-    this.hundleFetch();
-  };
-
-  getPhoto = id => {
-    this.setState({
-      photoForModal: this.state.searchArrayPhoto.filter(
-        photo => photo.id === id
-      ),
-    });
-  };
-
-  toggle = () => {
-    this.setState(({ show }) => ({
-      show: !show,
-    }));
-  };
-
-  render() {
-    const { searchArrayPhoto, status, photoForModal, show } = this.state;
-    const { toggle, getPhoto, hundleLoadMore } = this;
-    return (
-      <>
-        {status === 'pending' && <Loader />}
-        <ImageGalleryUl>
-          {status === 'resolved' && (
-            <ImageGalleryItem
-              hits={searchArrayPhoto}
-              onToggle={toggle}
-              onGetId={getPhoto}
-            />
-          )}
-        </ImageGalleryUl>
-        {btnToggle && <Button loadMore={hundleLoadMore} />}
-        {show && (
-          <Modal
-            onClose={toggle}
-            src={photoForModal[0].largeImageURL}
-            alt={photoForModal[0].tags}
-          ></Modal>
+  return (
+    <>
+      {status === 'pending' && <Loader />}
+      <ImageGalleryUl>
+        {status === 'resolved' && (
+          <ImageGalleryItem
+            hits={arrayPhoto}
+            onToggle={toggle}
+            onGetId={getPhoto}
+          />
         )}
-      </>
-    );
-  }
+      </ImageGalleryUl>
+      {btnToggle && <Button loadMore={hundleLoadMore} />}
+      {show && (
+        <Modal
+          onClose={toggle}
+          src={photoForModal.largeImageURL}
+          alt={photoForModal.tags}
+        ></Modal>
+      )}
+    </>
+  );
 }
 
 export default ImageGallery;
