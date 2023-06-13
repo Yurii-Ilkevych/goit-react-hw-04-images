@@ -3,10 +3,9 @@ import PropTypes from 'prop-types';
 import { Overlay, Modalka } from './Modal.styled';
 import { createPortal } from 'react-dom';
 const modalRoot = document.querySelector('#modal-root');
-function Modal({src, alt, onClose})  {
-
+function Modal({ src, alt, onClose }) {
   useEffect(() => {
-    const handleKey = (event) => {
+    const handleKey = event => {
       if (event.code === 'Escape') {
         onClose();
       }
@@ -18,28 +17,26 @@ function Modal({src, alt, onClose})  {
     };
   }, [onClose]);
 
-
-  
   const handleClick = event => {
     if (event.target === event.currentTarget) {
       onClose();
     }
   };
 
-    return createPortal(
-      <Overlay onClick={handleClick}>
-        <Modalka>
-          <img src={src} alt={alt} />
-        </Modalka>
-      </Overlay>,
-      modalRoot
-    );
+  return createPortal(
+    <Overlay onClick={handleClick}>
+      <Modalka>
+        <img src={src} alt={alt} />
+      </Modalka>
+    </Overlay>,
+    modalRoot
+  );
 }
 
 export default Modal;
 
 Modal.propTypes = {
-    onClose: PropTypes.func.isRequired,
-    src: PropTypes.string.isRequired,
-    alt: PropTypes.string.isRequired,
-}
+  onClose: PropTypes.func.isRequired,
+  src: PropTypes.string.isRequired,
+  alt: PropTypes.string.isRequired,
+};

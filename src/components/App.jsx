@@ -1,30 +1,26 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import { ToastContainer } from 'react-toastify';
 import { AppWrapper } from './App.styled';
-export class App extends Component {
-  state = {
-    name: '',
-  };
 
-  hundleForm = name => {
-    this.setState({ name });
+function App() {
+  const [name, setName] = useState('');
+  const hundleForm = name => {
+    setName(name);
   };
-
-  render() {
-    return (
-      <AppWrapper>
-        <Searchbar onForm={this.hundleForm} />
-        <ImageGallery searchName={this.state.name} />
-        <ToastContainer position={'top-left'} autoClose={3000} />
-      </AppWrapper>
-    );
-  }
+  return (
+    <AppWrapper>
+      <Searchbar onForm={hundleForm} />
+      <ImageGallery searchValueProp={name} />
+      <ToastContainer position={'top-left'} autoClose={3000} />
+    </AppWrapper>
+  );
 }
 
+export default App;
 
 App.propTypes = {
-name: PropTypes.string,
-}
+  name: PropTypes.string,
+};

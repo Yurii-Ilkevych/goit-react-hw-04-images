@@ -5,8 +5,10 @@ import {
 } from './ImageGalleryItem.styled';
 
 const ImageGalleryItem = ({ onToggle, onGetId, hits }) => {
-  return hits.map((hit) => {
-    return ( <a href='##'
+  return hits.map(hit => {
+    return (
+      <a
+        href="##"
         key={hit.id}
         onClick={() => {
           onToggle();
