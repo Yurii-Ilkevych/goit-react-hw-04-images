@@ -67,11 +67,10 @@ function ImageGallery({ searchValueProp }) {
 
   useEffect(() => {
     if (arrayPhoto !== null && arrayPhoto.length + 12 >= totalHits) {
-      console.log(arrayPhoto !== null && arrayPhoto.length + 12 >= totalHits);
       setBtnToggle(false);
     }
   }, [arrayPhoto, totalHits]);
-  
+
   const reset = () => {
     setArrayPhoto(null);
     setStatus('idle');
